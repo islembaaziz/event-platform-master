@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
   PlusCircle,
   Calendar,
@@ -13,14 +13,31 @@ import {
   Edit2,
   Heart,
   ThumbsUp,
-} from 'lucide-react';
-import DashboardLayout from '../../components/layout/DashboardLayout';
-import RoleGuard from '../../components/common/RoleGuard';
-import { api } from '../../lib/api';
-import { useAuth } from '../../context/AuthContext';
-import toast from 'react-hot-toast';
+} from "lucide-react";
+import DashboardLayout from "../../components/layout/DashboardLayout";
+import RoleGuard from "../../components/common/RoleGuard";
+import { api } from "../../lib/api";
+import { useAuth } from "../../context/AuthContext";
+import toast from "react-hot-toast";
 
 interface Event {
+  attendees: number;
+  _doc: {
+    _id: string;
+    title: string;
+    date: string;
+    location: string;
+    coverImage?: string;
+    createdBy?: {
+      _id: string;
+      name: string;
+    };
+    attendees?: number;
+    mediaCount?: number;
+    commentsCount?: number;
+    likesCount?: number;
+    shares?: number;
+  };
   _id: string;
   title: string;
   date: string;
@@ -30,8 +47,6 @@ interface Event {
     _id: string;
     name: string;
   };
-  attendees: number;
-  views: number;
   mediaCount: number;
   commentsCount: number;
   likesCount: number;
@@ -58,8 +73,8 @@ const Dashboard = () => {
   const fetchDashboardData = async () => {
     try {
       const [eventsResponse, mediaResponse] = await Promise.all([
-        api.get('/events'),
-        api.get('/media'),
+        api.get("/events"),
+        api.get("/media"),
       ]);
 
       const fetchedEvents = eventsResponse.data;
@@ -102,7 +117,7 @@ const Dashboard = () => {
       }
     } catch (error: any) {
       toast.error(
-        error.response?.data?.message || 'Failed to load dashboard data'
+        error.response?.data?.message || "Failed to load dashboard data"
       );
     } finally {
       setIsLoading(false);
@@ -112,7 +127,7 @@ const Dashboard = () => {
   const deleteEvent = async (eventId: string) => {
     if (
       !window.confirm(
-        'Are you sure you want to delete this event? This action cannot be undone.'
+        "Are you sure you want to delete this event? This action cannot be undone."
       )
     ) {
       return;
@@ -121,7 +136,7 @@ const Dashboard = () => {
     try {
       await api.delete(`/events/${eventId}`);
       setEvents(events.filter((event) => event._id !== eventId));
-      toast.success('Event deleted successfully');
+      toast.success("Event deleted successfully");
 
       // Update stats
       setStats((prev) => ({
@@ -129,7 +144,7 @@ const Dashboard = () => {
         totalEvents: prev.totalEvents - 1,
       }));
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to delete event');
+      toast.error(error.response?.data?.message || "Failed to delete event");
     }
   };
 
@@ -156,15 +171,16 @@ const Dashboard = () => {
         )
       );
 
-      toast.success(liked ? 'Event liked!' : 'Event unliked!');
+      toast.success(liked ? "Event liked!" : "Event unliked!");
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to like event');
+      toast.error(error.response?.data?.message || "Failed to like event");
     }
   };
 
   const addComment = async (eventId: string) => {
-    const content = prompt('Add a comment:');
-    if (!content || content.trim() === '') return;
+    console.log("Received in addComment:", eventId); // <= ajoute ceci
+    const content = prompt("Add a comment:");
+    if (!content || content.trim() === "") return;
 
     try {
       const response = await api.post(`/events/${eventId}/comment`, {
@@ -179,20 +195,20 @@ const Dashboard = () => {
         )
       );
 
-      toast.success('Comment added successfully!');
+      toast.success("Comment added successfully!");
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to add comment');
+      toast.error(error.response?.data?.message || "Failed to add comment");
     }
   };
 
   const canManageContent =
-    user?.role === 'organizer' || user?.role === 'administrator';
+    user?.role === "organizer" || user?.role === "administrator";
 
   return (
     <DashboardLayout title="Dashboard">
       <div className="space-y-6">
         {/* Role-specific welcome messages */}
-        {user?.role === 'administrator' ? (
+        {user?.role === "administrator" ? (
           <div className="bg-gradient-to-r from-purple-500/20 to-primary-500/20 border border-purple-500/30 rounded-lg p-4">
             <div className="flex items-center">
               <Users className="h-6 w-6 text-purple-400 mr-3" />
@@ -207,7 +223,7 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
-        ) : user?.role === 'organizer' ? (
+        ) : user?.role === "organizer" ? (
           <div className="bg-gradient-to-r from-green-500/20 to-primary-500/20 border border-green-500/30 rounded-lg p-4">
             <div className="flex items-center">
               <Calendar className="h-6 w-6 text-green-400 mr-3" />
@@ -239,26 +255,15 @@ const Dashboard = () => {
         )}
 
         {/* Overview stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="stat-card">
+        <div className="flex justify-center items-center gap-4 ">
+          <div className="stat-card w-full">
             <div className="flex justify-between items-start">
               <span className="stat-label">Total Events</span>
               <Calendar className="h-5 w-5 text-primary-500" />
             </div>
             <div className="stat-value">{stats.totalEvents}</div>
           </div>
-
-          <div className="stat-card">
-            <div className="flex justify-between items-start">
-              <span className="stat-label">Total Attendees</span>
-              <Users className="h-5 w-5 text-primary-500" />
-            </div>
-            <div className="stat-value">
-              {stats.totalAttendees.toLocaleString()}
-            </div>
-          </div>
-
-          <div className="stat-card">
+          <div className="stat-card w-full">
             <div className="flex justify-between items-start">
               <span className="stat-label">Media Uploads</span>
               <ImageIcon className="h-5 w-5 text-primary-500" />
@@ -267,25 +272,15 @@ const Dashboard = () => {
               {stats.totalMedia.toLocaleString()}
             </div>
           </div>
-
-          <div className="stat-card">
-            <div className="flex justify-between items-start">
-              <span className="stat-label">Total Shares</span>
-              <Share2 className="h-5 w-5 text-primary-500" />
-            </div>
-            <div className="stat-value">
-              {stats.totalShares.toLocaleString()}
-            </div>
-          </div>
         </div>
 
         {/* Event list section */}
         <div className="bg-dark-100 rounded-lg overflow-hidden">
           <div className="p-4 bg-dark-200 border-b border-dark-300 flex justify-between items-center">
             <h2 className="text-lg font-semibold text-white">
-              {canManageContent ? 'Your Events' : 'Available Events'}
+              {canManageContent ? "Your Events" : "Available Events"}
             </h2>
-            <RoleGuard allowedRoles={['organizer', 'administrator']}>
+            <RoleGuard allowedRoles={["organizer", "administrator"]}>
               <Link to="/editor/new" className="btn-primary">
                 <PlusCircle className="h-4 w-4 mr-2" />
                 Create Event
@@ -308,10 +303,10 @@ const Dashboard = () => {
               </h3>
               <p className="text-dark-500 mb-6">
                 {canManageContent
-                  ? 'Create your first event to get started'
-                  : 'No events available at the moment'}
+                  ? "Create your first event to get started"
+                  : "No events available at the moment"}
               </p>
-              <RoleGuard allowedRoles={['organizer', 'administrator']}>
+              <RoleGuard allowedRoles={["organizer", "administrator"]}>
                 <Link to="/editor/new" className="btn-primary">
                   <PlusCircle className="h-4 w-4 mr-2" />
                   Create Event
@@ -320,167 +315,128 @@ const Dashboard = () => {
             </div>
           ) : (
             <div className="divide-y divide-dark-300">
-              {events.map((event) => (
-                <div
-                  key={event._id}
-                  className="p-4 hover:bg-dark-200 transition-colors"
-                >
-                  <div className="flex items-center">
-                    <div className="h-16 w-16 rounded-md overflow-hidden flex-shrink-0">
-                      <img
-                        src={
-                          event.coverImage ||
-                          'https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg'
-                        }
-                        alt={event.title}
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-
-                    <div className="ml-4 flex-1 min-w-0">
-                      <div className="flex justify-between items-start">
-                        <h3 className="text-lg font-semibold text-white truncate">
-                          {event.title}
-                        </h3>
-                        <span className="text-xs text-dark-500 whitespace-nowrap ml-2">
-                          {new Date(event.date).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <p className="text-dark-500 text-sm truncate">
-                        {event.location}
-                      </p>
-
-                      <div className="mt-2 flex flex-wrap gap-3">
-                        <div className="flex items-center text-dark-500 text-xs">
-                          <Users className="h-3 w-3 mr-1" />
-                          {event.attendees ||
-                            Math.floor(Math.random() * 100) + 10}{' '}
-                          attending
-                        </div>
-                        <div className="flex items-center text-dark-500 text-xs">
-                          <Eye className="h-3 w-3 mr-1" />
-                          {event.views || 0} views
-                        </div>
-                        <div className="flex items-center text-dark-500 text-xs">
-                          <Heart className="h-3 w-3 mr-1" />
-                          {event.likesCount || 0} likes
-                        </div>
-                        <div className="flex items-center text-dark-500 text-xs">
-                          <MessageSquare className="h-3 w-3 mr-1" />
-                          {event.commentsCount || 0} comments
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="ml-4 flex space-x-2">
-                      {/* Like button for all users */}
-                      <button
-                        onClick={() => likeEvent(event._id)}
-                        className={`btn-secondary text-xs py-1 px-3 transition-colors ${
-                          likedEvents.has(event._id)
-                            ? 'bg-red-500 text-white hover:bg-red-600'
-                            : 'text-red-500 hover:bg-red-500 hover:text-white'
-                        }`}
-                      >
-                        <Heart
-                          className={`h-4 w-4 mr-1 ${
-                            likedEvents.has(event._id) ? 'fill-current' : ''
-                          }`}
+              {events.map((event) => {
+                console.log("Event in map:", event); // Debugging line
+                return (
+                  <div
+                    key={event._id}
+                    className="p-4 hover:bg-dark-200 transition-colors"
+                  >
+                    <div className="flex items-center">
+                      <div className="h-16 w-16 rounded-md overflow-hidden flex-shrink-0">
+                        <img
+                          src={
+                            event.coverImage ||
+                            "https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg"
+                          }
+                          alt={event.title}
+                          className="h-full w-full object-cover"
                         />
-                        Like
-                      </button>
+                      </div>
 
-                      {/* Comment button for all users */}
-                      <button
-                        onClick={() => addComment(event._id)}
-                        className="btn-secondary text-xs py-1 px-3 text-blue-500 hover:bg-blue-500 hover:text-white"
-                      >
-                        <MessageSquare className="h-4 w-4 mr-1" />
-                        Comment
-                      </button>
+                      <div className="ml-4 flex-1 min-w-0">
+                        <div className="flex justify-between items-start">
+                          <h3 className="text-lg font-semibold text-white truncate">
+                            {event.title}
+                          </h3>
+                          <span className="text-xs text-dark-500 whitespace-nowrap ml-2">
+                            {new Date(event.date).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <p className="text-dark-500 text-sm truncate">
+                          {event.location}
+                        </p>
 
-                      {/* Edit/Delete buttons only for content managers and owners */}
-                      <RoleGuard allowedRoles={['organizer', 'administrator']}>
-                        {canManageContent &&
-                          event?.createdBy?._id &&
-                          (event.createdBy._id === user?._id ||
-                            user?.role === 'administrator') && (
-                            <>
-                              <Link
-                                to={`/editor/${event._id}`}
-                                className="btn-secondary text-xs py-1 px-3"
-                              >
-                                <Edit2 className="h-4 w-4 mr-1" />
-                                Edit
-                              </Link>
-                              <button
-                                onClick={() => deleteEvent(event._id)}
-                                className="btn-secondary text-xs py-1 px-3 text-error hover:bg-error hover:text-white"
-                              >
-                                <Trash2 className="h-4 w-4 mr-1" />
-                                Delete
-                              </button>
-                            </>
-                          )}
-                      </RoleGuard>
+                        <div className="mt-2 flex flex-wrap gap-3">
+                          <div className="flex items-center text-dark-500 text-xs">
+                            <Heart className="h-3 w-3 mr-1" />
+                            {event.likesCount || 0} likes
+                          </div>
+                          <div className="flex items-center text-dark-500 text-xs">
+                            <MessageSquare className="h-3 w-3 mr-1" />
+                            {event.commentsCount || 0} comments
+                          </div>
+                        </div>
+                      </div>
 
-                      <Link
-                        to={`/events/${event._id}`}
-                        className="text-primary-500 hover:text-primary-400"
-                      >
-                        <ChevronRight className="h-5 w-5" />
-                      </Link>
+                      <div className="ml-4 flex space-x-2">
+                        {/* Like button */}
+                        <button
+                          onClick={() => likeEvent(event._id)}
+                          className={`btn-secondary text-xs py-1 px-3 transition-colors ${
+                            likedEvents.has(event._id)
+                              ? "bg-red-500 text-white hover:bg-red-600"
+                              : "text-red-500 hover:bg-red-500 hover:text-white"
+                          }`}
+                        >
+                          <Heart
+                            className={`h-4 w-4 mr-1 ${
+                              likedEvents.has(event._id) ? "fill-current" : ""
+                            }`}
+                          />
+                          Like
+                        </button>
+
+                        {/* Comment button with console log */}
+                        <button
+                          onClick={() => {
+                            console.log("event in comment button:", event);
+                            addComment(event._id || event._doc?._id);
+                          }}
+                          className="btn-secondary text-xs py-1 px-3 text-blue-500 hover:bg-blue-500 hover:text-white"
+                        >
+                          <MessageSquare className="h-4 w-4 mr-1" />
+                          Comment
+                        </button>
+
+                        {/* Edit/Delete buttons */}
+                        <RoleGuard
+                          allowedRoles={["organizer", "administrator"]}
+                        >
+                          {canManageContent &&
+                            event?.createdBy?._id &&
+                            (event.createdBy._id === user?._id ||
+                              user?.role === "administrator") && (
+                              <>
+                                <Link
+                                  to={`/editor/${event._id}`}
+                                  className="btn-secondary text-xs py-1 px-3"
+                                >
+                                  <Edit2 className="h-4 w-4 mr-1" />
+                                  Edit
+                                </Link>
+                                <button
+                                  onClick={() => deleteEvent(event._id)}
+                                  className="btn-secondary text-xs py-1 px-3 text-error hover:bg-error hover:text-white"
+                                >
+                                  <Trash2 className="h-4 w-4 mr-1" />
+                                  Delete
+                                </button>
+                              </>
+                            )}
+                        </RoleGuard>
+
+                        <Link
+                          to={`/events/${event._id}`}
+                          className="text-primary-500 hover:text-primary-400"
+                        >
+                          <ChevronRight className="h-5 w-5" />
+                        </Link>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
 
         {/* Quick actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="flex justify-center items-center">
           <RoleGuard
-            allowedRoles={['organizer', 'administrator']}
+            allowedRoles={["organizer", "administrator"]}
             fallback={
-              <div className="card hover:shadow-lg transition-all">
-                <h3 className="text-lg font-semibold text-white mb-2">
-                  Browse Events
-                </h3>
-                <p className="text-dark-500 text-sm mb-4">
-                  Discover and participate in amazing events.
-                </p>
-                <Link
-                  to="/events"
-                  className="text-primary-500 hover:text-primary-400 text-sm font-medium flex items-center"
-                >
-                  Explore Events
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </Link>
-              </div>
-            }
-          >
-            <div className="card hover:shadow-lg transition-all">
-              <h3 className="text-lg font-semibold text-white mb-2">
-                Upload Media
-              </h3>
-              <p className="text-dark-500 text-sm mb-4">
-                Add new photos and videos to your events.
-              </p>
-              <Link
-                to="/media"
-                className="text-primary-500 hover:text-primary-400 text-sm font-medium flex items-center"
-              >
-                Go to Media Manager
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Link>
-            </div>
-          </RoleGuard>
-
-          <RoleGuard
-            allowedRoles={['organizer', 'administrator']}
-            fallback={
-              <div className="card hover:shadow-lg transition-all">
+              <div className="card hover:shadow-lg transition-all w-full">
                 <h3 className="text-lg font-semibold text-white mb-2">
                   Read Publications
                 </h3>
@@ -513,45 +469,6 @@ const Dashboard = () => {
               </Link>
             </div>
           </RoleGuard>
-
-          <div className="card hover:shadow-lg transition-all">
-            <h3 className="text-lg font-semibold text-white mb-2">
-              <RoleGuard
-                allowedRoles={['organizer', 'administrator']}
-                fallback="Event Activity"
-              >
-                View Analytics
-              </RoleGuard>
-            </h3>
-            <p className="text-dark-500 text-sm mb-4">
-              <RoleGuard
-                allowedRoles={['organizer', 'administrator']}
-                fallback="See what's happening in the community."
-              >
-                Check performance metrics for your events.
-              </RoleGuard>
-            </p>
-            <RoleGuard
-              allowedRoles={['organizer', 'administrator']}
-              fallback={
-                <Link
-                  to="/events"
-                  className="text-primary-500 hover:text-primary-400 text-sm font-medium flex items-center"
-                >
-                  View Events
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </Link>
-              }
-            >
-              <Link
-                to="/statistics"
-                className="text-primary-500 hover:text-primary-400 text-sm font-medium flex items-center"
-              >
-                Go to Statistics
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Link>
-            </RoleGuard>
-          </div>
         </div>
       </div>
     </DashboardLayout>
