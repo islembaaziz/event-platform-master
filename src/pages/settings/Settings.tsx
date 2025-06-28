@@ -91,8 +91,8 @@ const Settings = () => {
       if (activeTab === "profile") {
         updateUser({
           ...user,
-          name: settings.name,
-          email: settings.email,
+          name: data.name,
+          email: data.email,
         });
       }
 

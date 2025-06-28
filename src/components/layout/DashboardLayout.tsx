@@ -44,7 +44,8 @@ const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
 
     if (user?.role === 'administrator') {
       baseNavigation.push(
-        { name: 'User Management', href: '/users', icon: Users, roles: ['administrator'] }
+        { name: 'User Management', href: '/users', icon: Users, roles: ['administrator'] },
+        { name: 'Event Management', href: '/events', icon: Shield, roles: ['administrator'] }
       );
     }
 

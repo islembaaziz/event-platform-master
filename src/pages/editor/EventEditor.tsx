@@ -83,7 +83,6 @@ const EventEditor = () => {
   useEffect(() => {
     if (!isNewEvent) {
       const fetchEvent = async () => {
-       
         try {
           const { data } = await api.get(`/events/${eventId}`);
           setEventData(data);

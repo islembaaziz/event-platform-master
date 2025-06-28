@@ -43,37 +43,21 @@ export const getAllEvents = async (req, res) => {
 //Fetch an envent (public - all users can view)
 export const getEventById = async (req, res) => {
   try {
-    const event = await Event.findById(req.params.id);
-
-    if (!event) {
-      return res.status(404).json({ message: "Event not found" });
+    const { id } = req.params;
+    if (!id || id === "undefined") {
+      return res.status(400).json({ message: "Invalid or missing event ID" });
     }
 
-    // Get like and comment counts
-    const [likesCount, commentsCount, comments] = await Promise.all([
-      Like.countDocuments({ targetType: "Event", targetId: event._id }),
-      Comment.countDocuments({
-        targetType: "Event",
-        targetId: event._id,
-        approved: true,
-      }),
-      Comment.find({ targetType: "Event", targetId: event._id, approved: true })
-        .sort({ createdAt: -1 })
-        .limit(10),
-    ]);
+    const event = await Event.findById(id);
 
-    // Increment view count
-    await Event.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } });
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found' });
+    }
 
-    res.json({
-      ...event,
-      likesCount,
-      commentsCount,
-      comments,
-    });
+    res.status(200).json(event);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
+    console.error('Error fetching event:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
 

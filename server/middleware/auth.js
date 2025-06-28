@@ -7,10 +7,10 @@ export const protect = async (req, res, next) => {
     const userRole = req.headers["x-user-role"];
 
     if (!userId) {
-      return res
-        .status(401)
-        .json({ message: "Not authorized to access this route" });
+      return res.status(401).json({ message: "Not authorized to access this route" });
     }
+
+    // Vérifie que userId est un ObjectId valide
 
     const user = await User.findById(userId);
 
@@ -18,7 +18,6 @@ export const protect = async (req, res, next) => {
       return res.status(401).json({ message: "User not found" });
     }
 
-    // Verify the role matches
     if (user.role !== userRole) {
       return res.status(401).json({ message: "Invalid user credentials" });
     }

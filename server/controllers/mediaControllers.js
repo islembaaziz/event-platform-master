@@ -1,6 +1,14 @@
 import Media from '../models/Media.js';
 import Like from '../models/Like.js';
 import Comment from '../models/Comment.js';
+import { join } from 'path';
+import path from 'path';
+import fs from 'fs';
+
+const uploadsDir = path.join(process.cwd(), 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
 // Get media items (public - all users can view)
 export const getMediaItems = async (req, res) => {

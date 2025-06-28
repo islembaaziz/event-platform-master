@@ -191,13 +191,17 @@ export const deleteUser = async (req, res) => {
 // Get user settings
 export const getUserSettings = async (req, res) => {
   try {
+    // Vérification de req.user._id
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     const user = await User.findById(req.user._id).select("-password");
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Return user data with default settings if not set
     const userSettings = {
       name: user.name,
       email: user.email,
@@ -226,7 +230,7 @@ export const getUserSettings = async (req, res) => {
 
     res.json(userSettings);
   } catch (error) {
-    console.error(error);
+    console.error("getUserSettings error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -234,6 +238,10 @@ export const getUserSettings = async (req, res) => {
 // Update user settings
 export const updateUserSettings = async (req, res) => {
   try {
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
     const {
       name,
       email,
@@ -245,6 +253,7 @@ export const updateUserSettings = async (req, res) => {
       appearanceSettings,
     } = req.body;
 
+    // Ne PAS passer 'settings' comme id, mais utiliser req.user._id
     const user = await User.findByIdAndUpdate(
       req.user._id,
       {
@@ -262,6 +271,10 @@ export const updateUserSettings = async (req, res) => {
       { new: true, runValidators: true }
     ).select("-password");
 
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
     res.json({
       name: user.name,
       email: user.email,
@@ -273,7 +286,8 @@ export const updateUserSettings = async (req, res) => {
       appearanceSettings: user.settings.appearanceSettings,
     });
   } catch (error) {
-    console.error(error);
+    console.error("updateUserSettings error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
+

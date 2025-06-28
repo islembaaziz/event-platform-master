@@ -42,6 +42,7 @@ app.use('/api/publications', publicationRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/statistics', statisticsRoutes);
 
+
 // Serve uploaded files
 app.use('/uploads', express.static(join(__dirname, 'uploads')));
 
