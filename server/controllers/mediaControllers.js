@@ -9,41 +9,34 @@ const uploadsDir = path.join(process.cwd(), 'uploads');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
-
-// Get media items (public - all users can view)
+//get all media 
 export const getMediaItems = async (req, res) => {
   try {
     const { eventId, userId, tags } = req.query;
     
     let query = Media.find();
     
-    if (eventId) {
-      query = query.where('eventId').equals(eventId);
-    }
-    
-    if (userId) {
-      query = query.where('userId').equals(userId);
-    }
-    
+    if (eventId) query = query.where('eventId').equals(eventId);
+    if (userId) query = query.where('userId').equals(userId);
     if (tags) {
       const tagList = tags.split(',');
       query = query.where('tags').all(tagList);
     }
     
-    const mediaItems = await query.populate('userId', 'name email').sort({ createdAt: -1 });
+    const mediaItems = await query
+      .populate('userId', 'name email')
+      .sort({ createdAt: -1 });
     
-    // Get like and comment counts for each media item
     const mediaWithCounts = await Promise.all(
       mediaItems.map(async (media) => {
         const [likesCount, commentsCount] = await Promise.all([
           Like.countDocuments({ targetType: 'Media', targetId: media._id }),
-          Comment.countDocuments({ targetType: 'Media', targetId: media._id, approved: true })
+          Comment.countDocuments({ targetType: 'Media', targetId: media._id, approved: true }),
         ]);
-        
         return {
           ...media.toObject(),
           likesCount,
-          commentsCount
+          commentsCount,
         };
       })
     );
@@ -53,7 +46,49 @@ export const getMediaItems = async (req, res) => {
     console.error(error);
     res.status(500).json({ message: 'Server error' });
   }
-}
+};
+
+
+// Upload media (only organizers and administrators)
+export const uploadMediaItem = async (req, res) => {
+  try {
+    if (!req.files || !req.files.files) {
+      return res.status(400).json({ message: 'No files were uploaded' });
+    }
+
+    const files = Array.isArray(req.files.files) ? req.files.files : [req.files.files];
+    const { eventId, tags } = req.body;
+
+    const uploadedFiles = [];
+
+    for (const file of files) {
+      const fileName = Date.now() + '_' + file.name;
+      const filePath = join(uploadsDir, fileName);
+      await file.mv(filePath);
+
+      const fileType = file.mimetype.startsWith("image/") ? "image" : "video";
+
+      const mediaItem = new Media({
+        type: fileType,
+        url: `/uploads/${fileName}`,
+        name: file.name,
+        size: file.size,
+        tags: tags ? tags.split(",") : [],
+        eventId: eventId || null,
+        userId: req.user._id,
+      });
+
+      await mediaItem.save();
+      uploadedFiles.push(mediaItem);
+    }
+
+    res.status(201).json(uploadedFiles);
+  } catch (error) {
+    console.error("Upload error:", error);
+    res.status(500).json({ message: "Server error during upload" });
+  }
+};
+
 
 // Get media items (public - all users can view)
 export const getMediaItemById = async (req, res) => {
@@ -237,6 +272,39 @@ export const commentOnMediaItem = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 }
+
+// Get media comments (public)
+export const getMediaComments = async (req, res) => {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+
+    const comments = await Comment.find({
+      targetType: "Media",
+      targetId: req.params.id,
+      approved: true,
+    })
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
+
+    const total = await Comment.countDocuments({
+      targetType: "Media",
+      targetId: req.params.id,
+      approved: true,
+    });
+
+    res.json({
+      comments,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page,
+      total,
+    });
+  } catch (error) {
+    console.error("Error fetching media comments:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 
 // Check if user liked media
 export const checkLikeStatus = async (req, res) => {

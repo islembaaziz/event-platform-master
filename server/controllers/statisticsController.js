@@ -4,13 +4,21 @@ import Publication from "../models/Publication.js";
 import Like from "../models/Like.js";
 import Comment from "../models/Comment.js";
 import User from "../models/User.js";
+import mongoose from "mongoose";
+import {
+  getEngagementByDay,
+  getTopEvents,
+  getTopMedia,
+  getTopPublications,
+  getUserActivity,
+  getContentDistribution,
+} from "./helpers/statisticsHelpers.js";
 
 // Get overall statistics (organizers and administrators only)
 export const getOverallStatistics = async (req, res) => {
   try {
     const { timeRange = "30days", eventId } = req.query;
 
-    // Calculate date range
     const now = new Date();
     let startDate;
 
@@ -31,21 +39,22 @@ export const getOverallStatistics = async (req, res) => {
         startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     }
 
-    // Build query filters
     const dateFilter = { createdAt: { $gte: startDate } };
-    let eventFilter = {};
+    let userFilter = {};
+    let eventMatch = {};
+
+    if (req.user.role === "organizer") {
+      userFilter.createdBy = req.user._id;
+    }
 
     if (eventId && eventId !== "all") {
-      eventFilter = { eventId };
+      const eventObjectId = new mongoose.Types.ObjectId(eventId);
+      eventMatch = { eventId: eventObjectId };
     }
 
-    // If user is organizer, only show their content
-    let userFilter = {};
-    if (req.user.role === "organizer") {
-      userFilter = { createdBy: req.user._id };
-    }
+    const combinedFilter = { ...userFilter, ...dateFilter };
+    const combinedEventFilter = { ...eventMatch, ...dateFilter };
 
-    // Get basic counts
     const [
       totalEvents,
       totalMedia,
@@ -54,31 +63,25 @@ export const getOverallStatistics = async (req, res) => {
       totalLikes,
       totalComments,
     ] = await Promise.all([
-      Event.countDocuments({ ...userFilter, ...dateFilter }),
-      Media.countDocuments({ ...userFilter, ...dateFilter }),
-      Publication.countDocuments({ ...userFilter, ...dateFilter }),
+      Event.countDocuments(combinedFilter),
+      Media.countDocuments(combinedEventFilter),
+      Publication.countDocuments(combinedEventFilter),
       User.countDocuments(dateFilter),
-      Like.countDocuments(dateFilter),
-      Comment.countDocuments(dateFilter),
+      Like.countDocuments({ ...eventMatch, ...dateFilter }),
+      Comment.countDocuments({ ...eventMatch, ...dateFilter }),
     ]);
 
-    // Get engagement data by day
     const engagementByDay = await getEngagementByDay(
       startDate,
       now,
-      eventFilter,
+      eventMatch,
       userFilter
     );
 
-    // Get top performing content
     const topEvents = await getTopEvents(userFilter, 5);
     const topMedia = await getTopMedia(userFilter, 5);
     const topPublications = await getTopPublications(userFilter, 5);
-
-    // Get user activity
     const userActivity = await getUserActivity(startDate, now);
-
-    // Get content type distribution
     const contentDistribution = await getContentDistribution(userFilter);
 
     res.json({
@@ -107,4 +110,3 @@ export const getOverallStatistics = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-

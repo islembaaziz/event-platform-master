@@ -10,7 +10,7 @@ import {
   X, 
   LogOut,
   Users,
-  Search,
+  
   Shield,
   Calendar
 } from 'lucide-react';
@@ -181,30 +181,7 @@ const DashboardLayout = ({ children, title }: DashboardLayoutProps) => {
               <h1 className="ml-4 text-xl font-bold text-white">{title}</h1>
             </div>
 
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-dark-500" />
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  className="pl-10 input bg-dark-200 h-9 w-48 text-sm"
-                />
-              </div>
-
-              <div className="flex items-center">
-                <div className="h-8 w-8 rounded-full bg-primary-500 flex items-center justify-center text-dark font-bold">
-                  {user?.name?.charAt(0) || 'U'}
-                </div>
-                <div className="ml-2 hidden md:block">
-                  <span className="text-sm font-medium text-white">
-                    {user?.name || 'User'}
-                  </span>
-                  <p className={`text-xs ${getRoleColor(user?.role || 'participant')}`}>
-                    {getRoleLabel(user?.role || 'participant')}
-                  </p>
-                </div>
-              </div>
-            </div>
+            
           </div>
         </div>
 

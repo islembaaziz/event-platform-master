@@ -242,9 +242,6 @@ const Settings = () => {
                 Security Settings
               </h2>
               <div className="space-y-4">
-
-              
-
                 <div className="pt-4">
                   <button
                     onClick={() => {
@@ -338,60 +335,6 @@ const Settings = () => {
                   <p className="text-dark-500 text-sm">
                     Adjust the text size for better readability
                   </p>
-                </div>
-
-                <div className="flex items-center justify-between py-3 border-b border-dark-300">
-                  <div>
-                    <h3 className="text-white font-medium">Compact Mode</h3>
-                    <p className="text-dark-500 text-sm">
-                      Reduce spacing between elements
-                    </p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={settings.appearanceSettings.compactMode}
-                      onChange={(e) =>
-                        setSettings({
-                          ...settings,
-                          appearanceSettings: {
-                            ...settings.appearanceSettings,
-                            compactMode: e.target.checked,
-                          },
-                        })
-                      }
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-dark-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
-                  </label>
-                </div>
-
-                <div className="flex items-center justify-between py-3 border-b border-dark-300">
-                  <div>
-                    <h3 className="text-white font-medium">
-                      Enable Animations
-                    </h3>
-                    <p className="text-dark-500 text-sm">
-                      Show animations and transitions
-                    </p>
-                  </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={settings.appearanceSettings.animationsEnabled}
-                      onChange={(e) =>
-                        setSettings({
-                          ...settings,
-                          appearanceSettings: {
-                            ...settings.appearanceSettings,
-                            animationsEnabled: e.target.checked,
-                          },
-                        })
-                      }
-                      className="sr-only peer"
-                    />
-                    <div className="w-11 h-6 bg-dark-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
-                  </label>
                 </div>
               </div>
             </div>

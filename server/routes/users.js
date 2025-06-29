@@ -3,6 +3,7 @@ import { protect, authorize } from "../middleware/auth.js";
 import {
   createUser,
   deleteUser,
+  deleteOwnAccount,
   getAllUsers,
   getUserProfile,
   getUserSettings,
@@ -14,41 +15,22 @@ import {
 
 const router = express.Router();
 
-// Get all users (admin only)
-router.get("/", protect, authorize("administrator"), getAllUsers);
-
-// Get user profile
+// ===== User Profile Routes =====
 router.get("/profile", protect, getUserProfile);
-
-// Update user profile
 router.put("/profile", protect, updateUserProfile);
 
-// Create new user (admin only)
-router.post("/", protect, authorize("administrator"), createUser);
-
-// Update user (admin only)
-router.put("/:id", protect, authorize("administrator"), updateUser);
-
-// Update user role (admin only)
-router.put(
-  "/:id/role",
-  protect,
-  authorize("administrator"),
-  updateUserRole
-);
-
-// Delete user (admin only)
-router.delete(
-  "/:id",
-  protect,
-  authorize("administrator"),
-  deleteUser
-);
-
-// Get user settings
+// ===== User Settings Routes =====
 router.get("/settings", protect, getUserSettings);
-
-// Update user settings
 router.put("/settings", protect, updateUserSettings);
+
+// ===== Self Account Deletion (MUST BE BEFORE /:id) =====
+router.delete("/account", protect, deleteOwnAccount);
+
+// ===== Admin Routes =====
+router.get("/", protect, authorize("administrator"), getAllUsers);
+router.post("/", protect, authorize("administrator"), createUser);
+router.put("/:id", protect, authorize("administrator"), updateUser);
+router.put("/:id/role", protect, authorize("administrator"), updateUserRole);
+router.delete("/:id", protect, authorize("administrator"), deleteUser);
 
 export default router;

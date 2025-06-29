@@ -115,47 +115,6 @@ const Register = () => {
                 <p className="mt-1 text-sm text-error">{errors.email.message}</p>
               )}
             </div>
-
-            <div>
-              <label className="label">Account Type</label>
-              <div className="space-y-3">
-                {roleOptions.map((option) => {
-                  const IconComponent = option.icon;
-                  return (
-                    <label
-                      key={option.value}
-                      className={`flex items-start p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                        selectedRole === option.value
-                          ? 'border-primary-500 bg-primary-500/10'
-                          : 'border-dark-300 hover:border-dark-200 hover:bg-dark-200/50'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        value={option.value}
-                        {...register('role', { required: 'Please select an account type' })}
-                        className="sr-only"
-                      />
-                      <div className={`flex-shrink-0 ${option.color} mt-0.5`}>
-                        <IconComponent className="h-5 w-5" />
-                      </div>
-                      <div className="ml-3">
-                        <div className="flex items-center">
-                          <span className="text-white font-medium">{option.label}</span>
-                          {selectedRole === option.value && (
-                            <div className="ml-2 h-2 w-2 bg-primary-500 rounded-full"></div>
-                          )}
-                        </div>
-                        <p className="text-dark-500 text-sm mt-1">{option.description}</p>
-                      </div>
-                    </label>
-                  );
-                })}
-              </div>
-              {errors.role && (
-                <p className="mt-1 text-sm text-error">{errors.role.message}</p>
-              )}
-            </div>
             
             <div>
               <label htmlFor="password" className="label">Password</label>

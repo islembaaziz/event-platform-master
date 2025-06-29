@@ -188,6 +188,22 @@ export const deleteUser = async (req, res) => {
   }
 };
 
+// Delete current authenticated user's account
+export const deleteOwnAccount = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    await user.deleteOne();
+    res.json({ message: "Your account has been deleted" });
+  } catch (error) {
+    console.error("deleteOwnAccount error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 // Get user settings
 export const getUserSettings = async (req, res) => {
   try {

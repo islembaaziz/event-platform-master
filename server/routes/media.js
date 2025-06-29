@@ -15,6 +15,9 @@ import {
   getMediaItems,
   likeMediaItem,
   updateMediaItem,
+  uploadMediaItem,
+  getMediaComments
+  
 } from "../controllers/mediaControllers.js";
 
 const router = express.Router();
@@ -31,7 +34,7 @@ if (!fs.existsSync(uploadsDir)) {
 router.get("/", getMediaItems);
 
 // Upload media (only organizers and administrators)
-router.post("/upload", protect, canManageContent, getMediaItemById);
+router.post("/upload", protect, canManageContent, uploadMediaItem);
 
 // Update media item (only organizers and administrators, and only own content)
 router.put("/:id", protect, canModifyOwnContent, updateMediaItem);
@@ -44,6 +47,9 @@ router.post("/:id/like", protect, likeMediaItem);
 
 // Comment on media (all authenticated users can comment)
 router.post("/:id/comment", protect, commentOnMediaItem);
+
+// Get media comments (public)
+router.get("/:id/comments", getMediaComments);
 
 // Check if user liked media
 router.get("/:id/like-status", protect, checkLikeStatus);

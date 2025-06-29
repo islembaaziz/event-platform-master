@@ -31,6 +31,14 @@ const mediaSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
+  },
+   commentsCount: {
+    type: Number,
+    default: 0,
+  },
+  likesCount: {
+    type: Number,
+    default: 0,
   }
 });
 

@@ -235,12 +235,6 @@ const UserManagement = () => {
                   <option value="organizer">Organizer</option>
                   <option value="participant">Participant</option>
                 </select>
-
-                <button className="btn-secondary text-sm">
-                  <Download className="h-4 w-4 mr-2" />
-                  Export
-                </button>
-
                 <button
                   onClick={() => setShowUserModal(true)}
                   className="btn-primary"

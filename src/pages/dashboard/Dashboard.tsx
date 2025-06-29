@@ -316,7 +316,6 @@ const Dashboard = () => {
           ) : (
             <div className="divide-y divide-dark-300">
               {events.map((event) => {
-                console.log("Event in map:", event); // Debugging line
                 return (
                   <div
                     key={event._id}
@@ -380,7 +379,6 @@ const Dashboard = () => {
                         {/* Comment button with console log */}
                         <button
                           onClick={() => {
-                            console.log("event in comment button:", event);
                             addComment(event._id || event._doc?._id);
                           }}
                           className="btn-secondary text-xs py-1 px-3 text-blue-500 hover:bg-blue-500 hover:text-white"
@@ -432,7 +430,7 @@ const Dashboard = () => {
         </div>
 
         {/* Quick actions */}
-        <div className="flex justify-center items-center">
+        <div className="flex justify-center items-start gap-8">
           <RoleGuard
             allowedRoles={["organizer", "administrator"]}
             fallback={
@@ -452,8 +450,9 @@ const Dashboard = () => {
                 </Link>
               </div>
             }
+           
           >
-            <div className="card hover:shadow-lg transition-all">
+            <div className="card hover:shadow-lg transition-all w-full">
               <h3 className="text-lg font-semibold text-white mb-2">
                 Create Publication
               </h3>
@@ -462,6 +461,43 @@ const Dashboard = () => {
               </p>
               <Link
                 to="/publications"
+                className="text-primary-500 hover:text-primary-400 text-sm font-medium flex items-center"
+              >
+                Go to Publications
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Link>
+            </div>
+          </RoleGuard>
+
+          <RoleGuard
+            allowedRoles={["organizer", "administrator", "participant"]}
+            fallback={
+              <div className="card hover:shadow-lg transition-all w-full">
+                <h3 className="text-lg font-semibold text-white mb-2">
+                  Read Media
+                </h3>
+                <p className="text-dark-500 text-sm mb-4">
+                  Explore and react the platform media's!
+                </p>
+                <Link
+                  to="/media"
+                  className="text-primary-500 hover:text-primary-400 text-sm font-medium flex items-center"
+                >
+                  View Publications
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Link>
+              </div>
+            }
+          >
+            <div className="card hover:shadow-lg transition-all w-full">
+              <h3 className="text-lg font-semibold text-white mb-2">
+                Upload Media
+              </h3>
+              <p className="text-dark-500 text-sm mb-4">
+                Upload events media !
+              </p>
+              <Link
+                to="/media"
                 className="text-primary-500 hover:text-primary-400 text-sm font-medium flex items-center"
               >
                 Go to Publications
